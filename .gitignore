@@ -1,0 +1,37 @@
+# --- Python & Environments ---
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.venv/
+.env
+
+# --- Streamlit ---
+# Ignores local secrets (Database URLs, API keys)
+.streamlit/secrets.toml
+
+# --- Data & Database ---
+# Critical: Do not commit the SQLite DB or sensitive Excel/CSV files
+data/*.db
+data/*.sqlite
+data/*.csv
+data/*.xlsx
+data/*.xls
+*.db
+
+# --- Google / Cloud Auth ---
+# Ignores downloaded Service Account keys
+*.json
+# Exception: You might want to keep config JSONs if they aren't secrets
+# If so, comment out *.json and list specific key files instead:
+# service_account_key.json
+# client_secret.json
+
+# --- OS Generated Files ---
+.DS_Store
+Thumbs.db
+
+# --- IDE Settings (Optional) ---
+.vscode/
+.idea/
