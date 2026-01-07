@@ -157,6 +157,9 @@ with tab4:
     st.markdown("This is the master list of VC funds Isomer has invested in.")
     
     funds_df = load_metadata('isomer_funds')
+    # FIX: Convert string text to DateTime objects so the Editor works
+    if not funds_df.empty and 'isomer_ic_date' in funds_df.columns:
+        funds_df['isomer_ic_date'] = pd.to_datetime(funds_df['isomer_ic_date'], errors='coerce')
     
     column_config = {
         "fund_name": st.column_config.TextColumn("Fund Name (Key)", help="Must match the 'Cleaned Fund Name' in your portfolio data"),
