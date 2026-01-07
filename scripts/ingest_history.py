@@ -106,7 +106,6 @@ if __name__ == "__main__":
     init_db()
     
     # Run Ingestion (Update paths to where your CSVs are)
-    ingest_isomer_funds("data/isomer_funds_sample.csv")
+    ingest_isomer_funds("data/isomer_funds.csv")
     
-    # ingest_portfolio_history("data/50k_historic_data.csv") 
-    # (Uncomment above line when you have the file ready)
+    ingest_portfolio_history("data/historic_data.csv") 

@@ -11,8 +11,10 @@ except ImportError:
         pass
 
 # Use Streamlit secrets for DB URL if available, else local SQLite
-# This supports your move to Google Drive/Cloud later
-DB_PATH = st.secrets.get("DB_URL", "sqlite:///data/isomer_central_repo.db")
+try:
+    DB_PATH = st.secrets["DB_URL"]
+except:
+    DB_PATH = "sqlite:///data/isomer_central_repo.db"
 
 def get_engine():
     return create_engine(DB_PATH)
@@ -34,7 +36,7 @@ def init_db():
                 lpa_num INTEGER,
                 company_name TEXT,
                 isomer_fund TEXT,
-                fund_name TEXT,            -- Matches 'Fund Name' in your Excel
+                fund_name TEXT,
                 reporting_quarter TEXT,
                 invest_year INTEGER,
                 status TEXT,
@@ -108,7 +110,7 @@ def save_quarterly_data(df, quarter_label):
         'LPA Num': 'lpa_num',
         'Company Name': 'company_name',
         'Isomer Fund': 'isomer_fund',
-        'Fund Name': 'fund_name',         # Correctly mapped to 'fund_name'
+        'Fund Name': 'fund_name',
         "Cost in Isomer's Share EUR": 'cost_eur',
         "Valuation of Isomer's Share EUR": 'value_eur',
         "Distributions EUR": 'distributions_eur',
@@ -127,4 +129,27 @@ def save_quarterly_data(df, quarter_label):
     
     # 3. Rename columns
     df_to_save = df.rename(columns=column_map)
-    df_to_save['reporting_
+    
+    # --- THIS WAS THE LINE CAUSING YOUR ERROR ---
+    df_to_save['reporting_quarter'] = quarter_label
+    # --------------------------------------------
+    
+    # 4. Ensure qualitative columns exist (fill with None if missing)
+    text_cols = ['description', 'long_description', 'sdgs', 'female_founders']
+    for col in text_cols:
+        if col not in df_to_save.columns:
+            df_to_save[col] = None
+
+    # 5. Filter for only valid DB columns
+    valid_cols = list(column_map.values()) + ['reporting_quarter']
+    # Only keep columns that are actually in our new dataframe
+    final_cols = [c for c in valid_cols if c in df_to_save.columns]
+    
+    df_to_save = df_to_save[final_cols]
+    
+    # 6. Save to SQLite
+    df_to_save.to_sql('portfolio_entries', engine, if_exists='append', index=False)
+    
+    # 7. Trigger Drive Sync (Back up the file immediately)
+    if "sqlite" in DB_PATH:
+        upload_db_to_drive()

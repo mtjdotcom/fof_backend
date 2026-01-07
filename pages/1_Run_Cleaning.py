@@ -95,28 +95,21 @@ if 'cleaned_data' in st.session_state:
     st.subheader(f"3. Results Preview ({mode_used.title()} Mode)")
     
     # Show key metrics
+    # FIX: Calculate sums first to avoid backslash errors in f-strings
+    total_cost = df_result["Cost in Isomer's Share EUR"].sum()
+    total_value = df_result["Valuation of Isomer's Share EUR"].sum()
+
     m1, m2, m3 = st.columns(3)
-    m1.metric("Total Cost", f"€{df_result['Cost in Isomer\'s Share EUR'].sum():,.0f}")
-    m2.metric("Total Value", f"€{df_result['Valuation of Isomer\'s Share EUR'].sum():,.0f}")
+    m1.metric("Total Cost", f"€{total_cost:,.0f}")
+    m2.metric("Total Value", f"€{total_value:,.0f}")
     m3.metric("Total Rows", len(df_result))
     
     # Data Preview
-    st.dataframe(df_result.head(10), use_container_width=True)
+    st.dataframe(df_result.head(10), width='stretch')
     
     col_download, col_db = st.columns([1, 2])
     
-    # --- A. Download Button ---
-    with col_download:
-        st.write("### Download CSV")
-        csv_buffer = BytesIO()
-        df_result.to_csv(csv_buffer, index=False)
-        st.download_button(
-            label="Download Clean CSV",
-            data=csv_buffer.getvalue(),
-            file_name=f"isomer_clean_data_{mode_used}.csv",
-            mime="text/csv",
-            type="primary"
-        )
+    # ... (Rest of the file remains the same)
 
     # --- B. Database Save Section ---
     with col_db:
