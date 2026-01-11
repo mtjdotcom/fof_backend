@@ -108,7 +108,7 @@ if 'cleaned_data' in st.session_state:
     m2.metric("Total Value", f"€{total_value:,.0f}")
     m3.metric("Total Rows", len(df_result))
     
-    st.dataframe(df_result.head(10), use_container_width=True)
+    st.dataframe(df_result.head(10), width='stretch')
     
     # Download Button
     csv = df_result.to_csv(index=False).encode('utf-8')

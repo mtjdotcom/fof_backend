@@ -1,12 +1,21 @@
 import pandas as pd
+import numpy as np
 import sys
 import os
 from sqlalchemy import text
 
+
+# sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+# Add project root to path FIRST
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from src.database import init_db, get_engine
+# NOW import from src (add clean_fund_name here)
+from src.database import init_db, get_engine, clean_fund_name  # ← Updated this line
 from src.cleaning import clean_portfolio_data
+
+# from src.database import init_db, get_engine
+# from src.cleaning import clean_portfolio_data
 
 def ingest_portfolio_history(file_path):
     engine = get_engine()
@@ -68,14 +77,32 @@ def ingest_portfolio_history(file_path):
     
     final_df = clean_df.rename(columns=db_map)
     
+    # ✅ ADD THIS BLOCK HERE:
+    if 'fund_name' in final_df.columns:
+        # final_df['fund_name'] = final_df['fund_name'].astype(str).replace('nan', pd.np.nan)
+        final_df['fund_name'] = final_df['fund_name'].astype(str).replace('nan', None)
+        final_df['clean_fund_name'] = final_df['fund_name'].apply(clean_fund_name)
+        final_df['clean_fund_name'] = final_df['clean_fund_name'].fillna(final_df['fund_name'])
+
+
+    # Update valid_cols to include it
     valid_cols = [
-        'lpa_num', 'company_name', 'isomer_fund', 'fund_name', 
-        'reporting_quarter', 'invest_quarter', 'invest_year', 
+        'lpa_num', 'company_name', 'isomer_fund', 'fund_name', 'clean_fund_name',  # ← Added here
+        'reporting_quarter', 'invest_quarter', 'invest_year',
         'initial_investment_date', 'data_as_of_date',
-        'status', 'country', 'technology_tag', 'business_model', 
-        'description', 'long_description', 'sdgs', 'female_founders', 
+        'status', 'country', 'technology_tag', 'business_model',
+        'description', 'long_description', 'sdgs', 'female_founders',
         'cost_eur', 'value_eur', 'distributions_eur', 'multiple', 'url'
     ]
+
+    # valid_cols = [
+    #     'lpa_num', 'company_name', 'isomer_fund', 'fund_name', 
+    #     'reporting_quarter', 'invest_quarter', 'invest_year', 
+    #     'initial_investment_date', 'data_as_of_date',
+    #     'status', 'country', 'technology_tag', 'business_model', 
+    #     'description', 'long_description', 'sdgs', 'female_founders', 
+    #     'cost_eur', 'value_eur', 'distributions_eur', 'multiple', 'url'
+    # ]
     
     cols_to_save = [c for c in valid_cols if c in final_df.columns]
     final_df = final_df[cols_to_save]

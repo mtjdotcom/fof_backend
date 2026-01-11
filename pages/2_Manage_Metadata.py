@@ -56,7 +56,7 @@ with tab1:
 with tab2:
     st.subheader("Name Mappings")
     name_df = load_metadata('meta_name_changes')
-    edited_names = st.data_editor(name_df, num_rows="dynamic", use_container_width=True, key="name_editor")
+    edited_names = st.data_editor(name_df, num_rows="dynamic", width='stretch', key="name_editor")
     if st.button("Save Names"):
         engine = get_engine()
         edited_names.to_sql('meta_name_changes', engine, if_exists='replace', index=False)
@@ -112,7 +112,7 @@ with tab4:
     edited_funds = st.data_editor(
         funds_df,
         column_config=column_config,
-        use_container_width=True,
+        width='stretch',
         num_rows="dynamic",
         key="funds_editor"
     )
@@ -181,7 +181,7 @@ with tab4:
 # with tab2:
 #     st.subheader("Name Mappings")
 #     name_df = load_metadata('meta_name_changes')
-#     edited_names = st.data_editor(name_df, num_rows="dynamic", use_container_width=True, key="name_editor")
+#     edited_names = st.data_editor(name_df, num_rows="dynamic", width='stretch', key="name_editor")
 #     if st.button("Save Names"):
 #         engine = get_engine()
 #         edited_names.to_sql('meta_name_changes', engine, if_exists='replace', index=False)
@@ -223,7 +223,7 @@ with tab4:
 #     edited_funds = st.data_editor(
 #         funds_df,
 #         column_config=column_config,
-#         use_container_width=True,
+#         width='stretch',
 #         num_rows="dynamic",
 #         key="funds_editor"
 #     )
@@ -307,7 +307,7 @@ with tab4:
 # #                     },
 # #                     hide_index=True,
 # #                     num_rows="fixed",
-# #                     use_container_width=True
+# #                     width='stretch'
 # #                 )
 
 # #                 if st.button("Save New Metadata"):
@@ -334,7 +334,7 @@ with tab4:
 # # with tab2:
 # #     st.subheader("Name Mappings")
 # #     name_df = load_metadata('meta_name_changes')
-# #     edited_names = st.data_editor(name_df, num_rows="dynamic", use_container_width=True, key="name_editor")
+# #     edited_names = st.data_editor(name_df, num_rows="dynamic", width='stretch', key="name_editor")
 
 # #     if st.button("Update Name Mappings"):
 # #         engine = get_engine()
@@ -347,11 +347,11 @@ with tab4:
 # # with tab3:
 # #     st.subheader("Full Metadata")
 # #     st.markdown("**All URLs**")
-# #     st.dataframe(load_metadata('meta_urls'), use_container_width=True)
+# #     st.dataframe(load_metadata('meta_urls'), width='stretch')
     
 # #     st.markdown("**All Tech Tags**")
 # #     tags_df = load_metadata('meta_tech_tags')
-# #     st.data_editor(tags_df, key="tags_editor", num_rows="dynamic", use_container_width=True)
+# #     st.data_editor(tags_df, key="tags_editor", num_rows="dynamic", width='stretch')
 # #     if st.button("Save Tech Tags"):
 # #          engine = get_engine()
 # #          st.session_state['tags_editor'].to_sql('meta_tech_tags', engine, if_exists='replace', index=False)
@@ -382,7 +382,7 @@ with tab4:
 # #     edited_funds = st.data_editor(
 # #         funds_df,
 # #         column_config=column_config,
-# #         use_container_width=True,
+# #         width='stretch',
 # #         num_rows="dynamic",
 # #         key="funds_editor"
 # #     )
