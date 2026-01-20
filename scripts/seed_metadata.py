@@ -16,7 +16,8 @@ def seed_metadata():
         if os.path.exists("data/fund_name_changes_master.csv"):
             print("   ...Loading Fund Name Overrides...")
             # Load with headers assumed (header=0)
-            map_df = pd.read_csv("data/fund_name_changes_master.csv")
+            # Use latin-1 encoding to handle non-UTF-8 characters (e.g., from Excel exports)
+            map_df = pd.read_csv("data/fund_name_changes_master.csv", encoding='latin-1')
             
             # Normalize column names (lowercase, strip)
             map_df.columns = map_df.columns.str.strip().str.lower()
@@ -40,9 +41,9 @@ def seed_metadata():
             
         # Other Meta tables
         if os.path.exists("data/company_urls_master.csv"):
-            pd.read_csv("data/company_urls_master.csv").rename(columns={'LPA Num': 'lpa_num', 'Organization URL': 'url'}).to_sql('meta_urls', engine, if_exists='replace', index=False)
+            pd.read_csv("data/company_urls_master.csv", encoding='latin-1').rename(columns={'LPA Num': 'lpa_num', 'Organization URL': 'url'}).to_sql('meta_urls', engine, if_exists='replace', index=False)
         if os.path.exists("data/tech_tags_master.csv"):
-            pd.read_csv("data/tech_tags_master.csv", header=None, names=['original_tag', 'cleaned_tag']).to_sql('meta_tech_tags', engine, if_exists='replace', index=False)
+            pd.read_csv("data/tech_tags_master.csv", header=None, names=['original_tag', 'cleaned_tag'], encoding='latin-1').to_sql('meta_tech_tags', engine, if_exists='replace', index=False)
             
     except Exception as e: 
         print(f"   ❌ Metadata Error: {e}")
@@ -51,7 +52,7 @@ def seed_metadata():
     try:
         if os.path.exists("data/isomer_internal_funds.csv"):
             print("   ...Loading Internal Funds...")
-            internal_df = pd.read_csv("data/isomer_internal_funds.csv")
+            internal_df = pd.read_csv("data/isomer_internal_funds.csv", encoding='latin-1')
             internal_df.columns = internal_df.columns.str.strip().str.lower().str.replace(' ', '_')
             rename_map = {'isomer_fund': 'isomer_fund', 'fund': 'isomer_fund', 'currency': 'currency', 'ccy': 'currency', 'fund_size': 'fund_size', 'size': 'fund_size', 'vintage_year': 'vintage_year', 'vintage': 'vintage_year'}
             internal_df.rename(columns=rename_map, inplace=True)
@@ -63,7 +64,7 @@ def seed_metadata():
     try:
         if os.path.exists("data/managers.csv"):
             print("   ...Loading Managers...")
-            mgr_df = pd.read_csv("data/managers.csv")
+            mgr_df = pd.read_csv("data/managers.csv", encoding='latin-1')
             mgr_df.columns = mgr_df.columns.str.strip().str.lower().str.replace(' ', '_')
             mgr_rename = {'organisation': 'organisation', 'manager': 'organisation', 'headquarters': 'headquarters', 'hq': 'headquarters', 'secondary_offices': 'secondary_offices', 'offices': 'secondary_offices', 'url': 'url', 'website': 'url'}
             mgr_df.rename(columns=mgr_rename, inplace=True)
@@ -83,7 +84,7 @@ def seed_metadata():
     for f in fund_files:
         if os.path.exists(f["path"]):
             try:
-                df = pd.read_csv(f["path"])
+                df = pd.read_csv(f["path"], encoding='latin-1')
                 df.columns = df.columns.str.strip().str.lower()
                 normalized_map = {k.lower(): v for k, v in f["map"].items()}
                 actual_rename = {k: v for k, v in normalized_map.items() if k in df.columns}
