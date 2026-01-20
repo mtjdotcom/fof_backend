@@ -1,9 +1,12 @@
 import streamlit as st
 import pandas as pd
-from src.database import load_metadata, get_engine
+from src.database import load_metadata, get_engine, init_db
 from sqlalchemy import text
 
 st.set_page_config(page_title="Metadata Manager", layout="wide")
+
+# Ensure database tables exist
+init_db()
 
 st.title("Metadata Management")
 

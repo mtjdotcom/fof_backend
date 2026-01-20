@@ -32,11 +32,26 @@ def clean_fund_name(name):
     return clean.strip(' ,.-')
 
 def load_metadata(table_name):
+    """Load metadata table, returning empty DataFrame with correct columns if table doesn't exist."""
+    # Define expected columns for each metadata table
+    table_columns = {
+        'meta_name_changes': ['original_name', 'new_name'],
+        'meta_urls': ['lpa_num', 'url'],
+        'meta_tech_tags': ['original_tag', 'cleaned_tag'],
+        'meta_fund_names': ['original_fund', 'cleaned_fund'],
+        'isomer_funds': ['fund_name', 'clean_fund_name', 'isomer_fund', 'organisation',
+                         'vintage_year', 'isomer_commitment_eur', 'isomer_ic_date',
+                         'lpac_seat', 'alt_name_1', 'alt_name_2', 'default_deal_type'],
+    }
+
     engine = get_engine()
     try:
         return pd.read_sql(f"SELECT * FROM {table_name}", engine)
     except Exception as e:
         print(f"Error loading {table_name}: {e}")
+        # Return empty DataFrame with correct columns if known
+        if table_name in table_columns:
+            return pd.DataFrame(columns=table_columns[table_name])
         return pd.DataFrame()
 
 def init_db():
