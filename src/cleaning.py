@@ -126,13 +126,15 @@ def clean_portfolio_data(files_dict, metadata, mode="duplicates"):
         if 'File Source' in dfc.columns: dfc.drop(columns=['File Source'], inplace=True)
 
     # 5. URL Merge
-    if 'urls' in metadata:
+    if 'urls' in metadata and not metadata['urls'].empty:
         urls_df = metadata['urls'].copy()
         urls_df.rename(columns={'lpa_num': 'LPA Num', 'url': 'URL', 'Organization URL': 'URL'}, inplace=True)
-        dfc['LPA Num'] = pd.to_numeric(dfc['LPA Num'], errors='coerce').fillna(0).astype(int)
-        urls_df['LPA Num'] = pd.to_numeric(urls_df['LPA Num'], errors='coerce').fillna(0).astype(int)
-        for char in URL_CHARS: urls_df['URL'] = urls_df['URL'].astype(str).str.replace(char, "", regex=False)
-        dfc = dfc.merge(urls_df[['LPA Num', 'URL']], on='LPA Num', how='left')
+        # Only proceed if we have the required columns after rename
+        if 'LPA Num' in urls_df.columns and 'URL' in urls_df.columns:
+            dfc['LPA Num'] = pd.to_numeric(dfc['LPA Num'], errors='coerce').fillna(0).astype(int)
+            urls_df['LPA Num'] = pd.to_numeric(urls_df['LPA Num'], errors='coerce').fillna(0).astype(int)
+            for char in URL_CHARS: urls_df['URL'] = urls_df['URL'].astype(str).str.replace(char, "", regex=False)
+            dfc = dfc.merge(urls_df[['LPA Num', 'URL']], on='LPA Num', how='left')
 
     # 6. Calc Metrics
     dfc['Multiple'] = (dfc["Valuation of Isomer's Share EUR"] + dfc["Distributions EUR"]) / dfc["Cost in Isomer's Share EUR"]
