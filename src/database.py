@@ -61,7 +61,7 @@ def init_db():
         conn.execute(text("CREATE TABLE IF NOT EXISTS meta_name_changes (original_name TEXT PRIMARY KEY, new_name TEXT)"))
         conn.execute(text("CREATE TABLE IF NOT EXISTS meta_tech_tags (original_tag TEXT PRIMARY KEY, cleaned_tag TEXT)"))
         conn.execute(text("CREATE TABLE IF NOT EXISTS meta_fund_names (original_fund TEXT PRIMARY KEY, cleaned_fund TEXT)"))
-        
+
         conn.execute(text("CREATE TABLE IF NOT EXISTS managers (organisation TEXT PRIMARY KEY, headquarters TEXT, secondary_offices TEXT, url TEXT)"))
         conn.execute(text("CREATE TABLE IF NOT EXISTS isomer_internal_funds (isomer_fund TEXT PRIMARY KEY, currency TEXT, fund_size REAL, vintage_year INTEGER)"))
 
@@ -119,6 +119,8 @@ def init_db():
         """))
         
         conn.execute(text("CREATE TABLE IF NOT EXISTS raw_portfolio_entries (raw_id INTEGER PRIMARY KEY AUTOINCREMENT, source_file TEXT, upload_timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, lpa_num TEXT, data_as_of_date TEXT, company_name_legal TEXT, company_short_name TEXT, fund_name TEXT, initial_investment_date TEXT, fund_currency TEXT, total_cost_fund_ccy TEXT, current_cost_fund_ccy TEXT, current_value_fund_ccy TEXT, realized_value_fund_ccy TEXT, total_value_fund_ccy TEXT, multiple_fund_ccy TEXT, total_cost_base_ccy TEXT, current_cost_base_ccy TEXT, current_value_base_ccy TEXT, realized_value_base_ccy TEXT, total_value_base_ccy TEXT, multiple_base_ccy TEXT, status TEXT, country TEXT, region_group TEXT, sector TEXT, industry_group TEXT, industry TEXT, industry_detailed TEXT, technology_tag TEXT, business_model TEXT, description TEXT, sdgs TEXT, female_founders TEXT, long_description TEXT)"))
+        conn.commit()
+
 
 def save_raw_data(df, source_label):
     engine = get_engine()
