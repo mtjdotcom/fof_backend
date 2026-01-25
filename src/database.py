@@ -68,7 +68,7 @@ def init_db():
         conn.execute(text("""
             CREATE TABLE IF NOT EXISTS isomer_funds (
                 fund_name TEXT PRIMARY KEY,
-                clean_fund_name TEXT,  
+                clean_fund_name TEXT,
                 isomer_fund TEXT,
                 organisation TEXT,
                 vintage_year INTEGER,
@@ -77,9 +77,31 @@ def init_db():
                 lpac_seat BOOLEAN,
                 alt_name_1 TEXT,
                 alt_name_2 TEXT,
-                default_deal_type TEXT 
+                default_deal_type TEXT
             )
         """))
+
+        # Fix isomer_funds table if fund_name column is missing
+        result = conn.execute(text("PRAGMA table_info(isomer_funds)"))
+        columns = [row[1] for row in result.fetchall()]
+        if 'fund_name' not in columns:
+            # Table exists but missing fund_name - recreate it
+            conn.execute(text("DROP TABLE isomer_funds"))
+            conn.execute(text("""
+                CREATE TABLE isomer_funds (
+                    fund_name TEXT PRIMARY KEY,
+                    clean_fund_name TEXT,
+                    isomer_fund TEXT,
+                    organisation TEXT,
+                    vintage_year INTEGER,
+                    isomer_commitment_eur REAL,
+                    isomer_ic_date DATE,
+                    lpac_seat BOOLEAN,
+                    alt_name_1 TEXT,
+                    alt_name_2 TEXT,
+                    default_deal_type TEXT
+                )
+            """))
 
         conn.execute(text("""
             CREATE TABLE IF NOT EXISTS portfolio_entries (
