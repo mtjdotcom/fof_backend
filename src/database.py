@@ -77,15 +77,15 @@ def create_all_transactions_view():
 
             SELECT
                 'Secondary' as transaction_type,
-                COALESCE(fund_name, transaction) as fund_name,
-                COALESCE(fund_name, transaction) as clean_name,
+                COALESCE(fund_name, "transaction") as fund_name,
+                COALESCE(fund_name, "transaction") as clean_name,
                 isomer_fund,
                 NULL as organisation,
                 NULL as vintage_year,
                 isomer_commitment_eur,
                 default_deal_type
             FROM secondaries
-            WHERE COALESCE(fund_name, transaction) IS NOT NULL
+            WHERE COALESCE(fund_name, "transaction") IS NOT NULL
 
             UNION ALL
 
