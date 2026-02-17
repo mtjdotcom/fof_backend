@@ -11,11 +11,13 @@ init_db()
 st.title("Metadata Management")
 
 # --- DEFINE TABS ---
-tab1, tab2, tab3, tab4 = st.tabs([
-    "1. Detect New Companies", 
-    "2. Manage Name Mappings", 
-    "3. View All Metadata", 
-    "4. Fund Commitments"
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+    "1. Detect New Companies",
+    "2. Manage Name Mappings",
+    "3. View All Metadata",
+    "4. Fund Commitments",
+    "5. Secondaries",
+    "6. Co-Investments"
 ])
 
 # TAB 1: NEW COMPANY DETECTOR
@@ -134,6 +136,56 @@ with tab4:
 
         save_df.to_sql('isomer_funds', engine, if_exists='replace', index=False)
         st.success("✅ Fund Commitments updated successfully!")
+
+# TAB 5: SECONDARIES
+with tab5:
+    st.subheader("Secondaries")
+    st.markdown("Manage secondary transactions.")
+
+    secondaries_df = load_metadata('secondaries')
+
+    if not secondaries_df.empty:
+        # Fix date columns if they exist
+        for date_col in ['ic_date', 'isomer_ic_date']:
+            if date_col in secondaries_df.columns:
+                secondaries_df[date_col] = pd.to_datetime(secondaries_df[date_col], errors='coerce')
+
+    edited_secondaries = st.data_editor(
+        secondaries_df,
+        width='stretch',
+        num_rows="dynamic",
+        key="secondaries_editor"
+    )
+
+    if st.button("Save Secondaries"):
+        engine = get_engine()
+        edited_secondaries.to_sql('secondaries', engine, if_exists='replace', index=False)
+        st.success("✅ Secondaries updated successfully!")
+
+# TAB 6: CO-INVESTMENTS
+with tab6:
+    st.subheader("Co-Investments")
+    st.markdown("Manage co-investment transactions.")
+
+    coinvests_df = load_metadata('coinvests')
+
+    if not coinvests_df.empty:
+        # Fix date columns if they exist
+        for date_col in ['ic_date', 'isomer_ic_date']:
+            if date_col in coinvests_df.columns:
+                coinvests_df[date_col] = pd.to_datetime(coinvests_df[date_col], errors='coerce')
+
+    edited_coinvests = st.data_editor(
+        coinvests_df,
+        width='stretch',
+        num_rows="dynamic",
+        key="coinvests_editor"
+    )
+
+    if st.button("Save Co-Investments"):
+        engine = get_engine()
+        edited_coinvests.to_sql('coinvests', engine, if_exists='replace', index=False)
+        st.success("✅ Co-Investments updated successfully!")
 
 # import streamlit as st
 # import pandas as pd
