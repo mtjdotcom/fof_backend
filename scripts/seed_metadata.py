@@ -46,15 +46,9 @@ def seed_metadata():
             pd.read_csv("data/tech_tags_master.csv", header=None, names=['original_tag', 'cleaned_tag'], encoding='utf-8-sig').to_sql('meta_tech_tags', engine, if_exists='replace', index=False)
         if os.path.exists("data/name_change_master.csv"):
             print("   ...Loading Company Name Mappings...")
-            name_df = pd.read_csv("data/name_change_master.csv", encoding='utf-8-sig')
-            name_df.columns = name_df.columns.str.strip().str.lower()
-            # Handle various column name formats
-            rename_map = {'original': 'original_name', 'original_name': 'original_name',
-                         'new': 'new_name', 'new_name': 'new_name', 'clean': 'new_name'}
-            name_df.rename(columns=rename_map, inplace=True)
-            if 'original_name' in name_df.columns and 'new_name' in name_df.columns:
-                name_df.to_sql('meta_name_changes', engine, if_exists='replace', index=False)
-                print(f"   ✅ Loaded {len(name_df)} Company Name Mappings.")
+            name_df = pd.read_csv("data/name_change_master.csv", header=None, names=['original_name', 'new_name'], encoding='utf-8-sig')
+            name_df.to_sql('meta_name_changes', engine, if_exists='replace', index=False)
+            print(f"   ✅ Loaded {len(name_df)} Company Name Mappings.")
             
     except Exception as e: 
         print(f"   ❌ Metadata Error: {e}")
