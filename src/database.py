@@ -50,6 +50,60 @@ def load_metadata(table_name):
             return pd.DataFrame(columns=table_columns[table_name])
         return pd.DataFrame()
 
+def create_all_transactions_view():
+    """Create a VIEW that combines isomer_funds, secondaries, and coinvests."""
+    engine = get_engine()
+    with engine.connect() as conn:
+        # Drop existing view if it exists
+        conn.execute(text("DROP VIEW IF EXISTS all_transactions"))
+
+        # Get common columns across tables (plus transaction_type identifier)
+        # We select key columns that exist, with NULLs for missing ones
+        conn.execute(text("""
+            CREATE VIEW all_transactions AS
+            SELECT
+                'Primary Fund' as transaction_type,
+                fund_name,
+                COALESCE(clean_fund_name, fund_name) as clean_name,
+                isomer_fund,
+                organisation,
+                vintage_year,
+                isomer_commitment_eur,
+                default_deal_type
+            FROM isomer_funds
+            WHERE fund_name IS NOT NULL
+
+            UNION ALL
+
+            SELECT
+                'Secondary' as transaction_type,
+                COALESCE(fund_name, transaction) as fund_name,
+                COALESCE(fund_name, transaction) as clean_name,
+                isomer_fund,
+                NULL as organisation,
+                NULL as vintage_year,
+                isomer_commitment_eur,
+                default_deal_type
+            FROM secondaries
+            WHERE COALESCE(fund_name, transaction) IS NOT NULL
+
+            UNION ALL
+
+            SELECT
+                'Co-Invest' as transaction_type,
+                COALESCE(fund_name, company_name) as fund_name,
+                COALESCE(fund_name, company_name) as clean_name,
+                isomer_fund,
+                NULL as organisation,
+                NULL as vintage_year,
+                COALESCE(isomer_commitment_eur, cost) as isomer_commitment_eur,
+                default_deal_type
+            FROM coinvests
+            WHERE COALESCE(fund_name, company_name) IS NOT NULL
+        """))
+        conn.commit()
+        print("✅ Created 'all_transactions' view")
+
 def init_db():
     engine = get_engine()
     with engine.connect() as conn:

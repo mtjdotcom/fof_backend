@@ -4,7 +4,7 @@ import os
 from sqlalchemy import text
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from src.database import init_db, get_engine, clean_fund_name
+from src.database import init_db, get_engine, clean_fund_name, create_all_transactions_view
 
 def seed_metadata():
     engine = get_engine()
@@ -111,6 +111,12 @@ def seed_metadata():
             print(f"✅ Loaded {len(df)} co-invests.")
         except Exception as e:
             print(f"   ❌ Error loading coinvest.csv: {e}")
+
+    # 7. Create unified view of all transactions
+    try:
+        create_all_transactions_view()
+    except Exception as e:
+        print(f"   ⚠️ Could not create all_transactions view: {e}")
 
 if __name__ == "__main__":
     init_db()
