@@ -123,25 +123,14 @@ with tab4:
     if st.button("Save Fund Commitments"):
         engine = get_engine()
 
-        # Ensure all required columns exist before saving
-        required_columns = ['fund_name', 'clean_fund_name', 'isomer_fund', 'organisation',
-                           'vintage_year', 'isomer_commitment_eur', 'isomer_ic_date',
-                           'lpac_seat', 'alt_name_1', 'alt_name_2', 'default_deal_type']
-
         save_df = edited_funds.copy()
-        for col in required_columns:
-            if col not in save_df.columns:
-                save_df[col] = None
 
-        # Auto-generate clean_fund_name from fund_name if missing
+        # Auto-generate clean_fund_name from fund_name
         if 'fund_name' in save_df.columns:
             from src.database import clean_fund_name
             save_df['clean_fund_name'] = save_df['fund_name'].apply(
                 lambda x: clean_fund_name(x) if pd.notna(x) else None
             )
-
-        # Reorder columns to match schema
-        save_df = save_df[[c for c in required_columns if c in save_df.columns]]
 
         save_df.to_sql('isomer_funds', engine, if_exists='replace', index=False)
         st.success("✅ Fund Commitments updated successfully!")

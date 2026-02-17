@@ -32,16 +32,13 @@ def clean_fund_name(name):
     return clean.strip(' ,.-')
 
 def load_metadata(table_name):
-    """Load metadata table, returning empty DataFrame with correct columns if table doesn't exist."""
-    # Define expected columns for each metadata table
+    """Load metadata table, returning empty DataFrame if table doesn't exist."""
+    # Fallback columns for core metadata tables (created by init_db)
     table_columns = {
         'meta_name_changes': ['original_name', 'new_name'],
         'meta_urls': ['lpa_num', 'url'],
         'meta_tech_tags': ['original_tag', 'cleaned_tag'],
         'meta_fund_names': ['original_fund', 'cleaned_fund'],
-        'isomer_funds': ['fund_name', 'clean_fund_name', 'isomer_fund', 'organisation',
-                         'vintage_year', 'isomer_commitment_eur', 'isomer_ic_date',
-                         'lpac_seat', 'alt_name_1', 'alt_name_2', 'default_deal_type'],
     }
 
     engine = get_engine()
@@ -49,7 +46,6 @@ def load_metadata(table_name):
         return pd.read_sql(f"SELECT * FROM {table_name}", engine)
     except Exception as e:
         print(f"Error loading {table_name}: {e}")
-        # Return empty DataFrame with correct columns if known
         if table_name in table_columns:
             return pd.DataFrame(columns=table_columns[table_name])
         return pd.DataFrame()
@@ -62,46 +58,8 @@ def init_db():
         conn.execute(text("CREATE TABLE IF NOT EXISTS meta_tech_tags (original_tag TEXT PRIMARY KEY, cleaned_tag TEXT)"))
         conn.execute(text("CREATE TABLE IF NOT EXISTS meta_fund_names (original_fund TEXT PRIMARY KEY, cleaned_fund TEXT)"))
 
-        conn.execute(text("CREATE TABLE IF NOT EXISTS managers (organisation TEXT PRIMARY KEY, headquarters TEXT, secondary_offices TEXT, url TEXT)"))
-        conn.execute(text("CREATE TABLE IF NOT EXISTS isomer_internal_funds (isomer_fund TEXT PRIMARY KEY, currency TEXT, fund_size REAL, vintage_year INTEGER)"))
-
-        conn.execute(text("""
-            CREATE TABLE IF NOT EXISTS isomer_funds (
-                fund_name TEXT PRIMARY KEY,
-                clean_fund_name TEXT,
-                isomer_fund TEXT,
-                organisation TEXT,
-                vintage_year INTEGER,
-                isomer_commitment_eur REAL,
-                isomer_ic_date DATE,
-                lpac_seat BOOLEAN,
-                alt_name_1 TEXT,
-                alt_name_2 TEXT,
-                default_deal_type TEXT
-            )
-        """))
-
-        # Fix isomer_funds table if fund_name column is missing
-        result = conn.execute(text("PRAGMA table_info(isomer_funds)"))
-        columns = [row[1] for row in result.fetchall()]
-        if 'fund_name' not in columns:
-            # Table exists but missing fund_name - recreate it
-            conn.execute(text("DROP TABLE isomer_funds"))
-            conn.execute(text("""
-                CREATE TABLE isomer_funds (
-                    fund_name TEXT PRIMARY KEY,
-                    clean_fund_name TEXT,
-                    isomer_fund TEXT,
-                    organisation TEXT,
-                    vintage_year INTEGER,
-                    isomer_commitment_eur REAL,
-                    isomer_ic_date DATE,
-                    lpac_seat BOOLEAN,
-                    alt_name_1 TEXT,
-                    alt_name_2 TEXT,
-                    default_deal_type TEXT
-                )
-            """))
+        # managers, isomer_internal_funds, and isomer_funds schemas are created
+        # dynamically by seed_metadata.py from CSV data to preserve all columns
 
         conn.execute(text("""
             CREATE TABLE IF NOT EXISTS portfolio_entries (
