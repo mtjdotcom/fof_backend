@@ -56,8 +56,7 @@ def seed_metadata():
             internal_df.columns = internal_df.columns.str.strip().str.lower().str.replace(' ', '_')
             rename_map = {'isomer_fund': 'isomer_fund', 'fund': 'isomer_fund', 'currency': 'currency', 'ccy': 'currency', 'fund_size': 'fund_size', 'size': 'fund_size', 'vintage_year': 'vintage_year', 'vintage': 'vintage_year'}
             internal_df.rename(columns=rename_map, inplace=True)
-            valid_cols = ['isomer_fund', 'currency', 'fund_size', 'vintage_year']
-            internal_df[[c for c in valid_cols if c in internal_df.columns]].to_sql('isomer_internal_funds', engine, if_exists='replace', index=False)
+            internal_df.to_sql('isomer_internal_funds', engine, if_exists='replace', index=False)
     except: pass
 
     # 3. Managers
@@ -68,8 +67,7 @@ def seed_metadata():
             mgr_df.columns = mgr_df.columns.str.strip().str.lower().str.replace(' ', '_')
             mgr_rename = {'organisation': 'organisation', 'manager': 'organisation', 'headquarters': 'headquarters', 'hq': 'headquarters', 'secondary_offices': 'secondary_offices', 'offices': 'secondary_offices', 'url': 'url', 'website': 'url'}
             mgr_df.rename(columns=mgr_rename, inplace=True)
-            mgr_valid = ['organisation', 'headquarters', 'secondary_offices', 'url']
-            mgr_df[[c for c in mgr_valid if c in mgr_df.columns]].to_sql('managers', engine, if_exists='replace', index=False)
+            mgr_df.to_sql('managers', engine, if_exists='replace', index=False)
     except: pass
 
     # 4. Master Fund List
@@ -108,8 +106,7 @@ def seed_metadata():
         if 'fund_name' in master_df.columns:
             master_df['clean_fund_name'] = master_df['fund_name'].apply(clean_fund_name)
 
-        db_cols = ['fund_name', 'clean_fund_name', 'isomer_fund', 'organisation', 'vintage_year', 'isomer_commitment_eur', 'isomer_ic_date', 'lpac_seat', 'alt_name_1', 'alt_name_2', 'default_deal_type']
-        master_df[[c for c in db_cols if c in master_df.columns]].to_sql('isomer_funds', engine, if_exists='replace', index=False)
+        master_df.to_sql('isomer_funds', engine, if_exists='replace', index=False)
         print(f"✅ Loaded {len(master_df)} Total Master Funds.")
 
 if __name__ == "__main__":
