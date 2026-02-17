@@ -70,44 +70,47 @@ def seed_metadata():
             mgr_df.to_sql('managers', engine, if_exists='replace', index=False)
     except: pass
 
-    # 4. Master Fund List
-    print("   ...Merging Master Fund Lists...")
-    fund_files = [
-        {"path": "data/isomer_funds.csv", "fallback": "Primary Fund", "map": {'fund_name': 'fund_name', 'isomer_fund': 'isomer_fund', 'organisation': 'organisation', 'vintage_year': 'vintage_year', 'isomer_commitment_eur': 'isomer_commitment_eur', 'isomer_ic_date': 'isomer_ic_date', 'lpac_seat': 'lpac_seat', 'alt_name_1': 'alt_name_1', 'alt_name_2': 'alt_name_2', 'deal_type': 'default_deal_type'}},
-        {"path": "data/secondaries.csv", "fallback": "Direct Secondary", "map": {'transaction': 'fund_name', 'isomer_fund': 'isomer_fund', 'alt_name_1': 'alt_name_1', 'alt_name_2': 'alt_name_2', 'deal_type': 'default_deal_type', 'ic_date': 'isomer_ic_date', 'purchase_price_eur_drawn_and_undrawn': 'isomer_commitment_eur'}},
-        {"path": "data/coinvest.csv", "fallback": "Direct Co-Invest", "map": {'company_name': 'fund_name', 'isomer_fund': 'isomer_fund', 'alt_name_1': 'alt_name_1', 'alt_name_2': 'alt_name_2', 'deal_type': 'default_deal_type', 'cost': 'isomer_commitment_eur'}}
-    ]
-    
-    combined_funds = []
-    for f in fund_files:
-        if os.path.exists(f["path"]):
-            try:
-                df = pd.read_csv(f["path"], encoding='latin-1')
-                df.columns = df.columns.str.strip().str.lower()
-                normalized_map = {k.lower(): v for k, v in f["map"].items()}
-                actual_rename = {k: v for k, v in normalized_map.items() if k in df.columns}
-                df.rename(columns=actual_rename, inplace=True)
-                
-                if 'default_deal_type' in df.columns:
-                    df['default_deal_type'] = df['default_deal_type'].fillna(f["fallback"])
-                else:
-                    df['default_deal_type'] = f["fallback"]
-                combined_funds.append(df)
-            except: pass
+    # 4. Isomer Funds - load directly from CSV, preserve ALL columns
+    if os.path.exists("data/isomer_funds.csv"):
+        print("   ...Loading Isomer Funds...")
+        try:
+            df = pd.read_csv("data/isomer_funds.csv", encoding='utf-8-sig')  # utf-8-sig handles BOM
+            df.columns = df.columns.str.strip().str.lower()
 
-    if combined_funds:
-        master_df = pd.concat(combined_funds, ignore_index=True)
-        if 'organisation' not in master_df.columns: master_df['organisation'] = None
-        defaults = {'vintage_year': 2020, 'isomer_commitment_eur': 0, 'isomer_ic_date': None, 'lpac_seat': False, 'alt_name_1': None, 'alt_name_2': None, 'default_deal_type': 'Primary Fund'}
-        for col, val in defaults.items():
-            if col not in master_df.columns: master_df[col] = val
-        
-        # Apply clean name
-        if 'fund_name' in master_df.columns:
-            master_df['clean_fund_name'] = master_df['fund_name'].apply(clean_fund_name)
+            # Rename deal_type to default_deal_type for consistency
+            if 'deal_type' in df.columns:
+                df.rename(columns={'deal_type': 'default_deal_type'}, inplace=True)
 
-        master_df.to_sql('isomer_funds', engine, if_exists='replace', index=False)
-        print(f"✅ Loaded {len(master_df)} Total Master Funds.")
+            # Generate clean_fund_name if fund_name exists
+            if 'fund_name' in df.columns:
+                df['clean_fund_name'] = df['fund_name'].apply(clean_fund_name)
+
+            df.to_sql('isomer_funds', engine, if_exists='replace', index=False)
+            print(f"✅ Loaded {len(df)} funds with {len(df.columns)} columns.")
+        except Exception as e:
+            print(f"   ❌ Error loading isomer_funds.csv: {e}")
+
+    # 5. Secondaries - separate table
+    if os.path.exists("data/secondaries.csv"):
+        print("   ...Loading Secondaries...")
+        try:
+            df = pd.read_csv("data/secondaries.csv", encoding='utf-8-sig')
+            df.columns = df.columns.str.strip().str.lower()
+            df.to_sql('secondaries', engine, if_exists='replace', index=False)
+            print(f"✅ Loaded {len(df)} secondaries.")
+        except Exception as e:
+            print(f"   ❌ Error loading secondaries.csv: {e}")
+
+    # 6. Co-invests - separate table
+    if os.path.exists("data/coinvest.csv"):
+        print("   ...Loading Co-invests...")
+        try:
+            df = pd.read_csv("data/coinvest.csv", encoding='utf-8-sig')
+            df.columns = df.columns.str.strip().str.lower()
+            df.to_sql('coinvests', engine, if_exists='replace', index=False)
+            print(f"✅ Loaded {len(df)} co-invests.")
+        except Exception as e:
+            print(f"   ❌ Error loading coinvest.csv: {e}")
 
 if __name__ == "__main__":
     init_db()
